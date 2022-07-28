@@ -144,7 +144,7 @@ export const CustomProvider = ({ children }) => {
       const campaignFactoryContract = getCampainFactoryContract();
 
       const parsedAmountMin = ethers.utils.parseEther(minContribution);
-
+      console.log(parsedAmountMin);
       const campaignHash = await campaignFactoryContract.CreateCampaign(
         parsedAmountMin
       );

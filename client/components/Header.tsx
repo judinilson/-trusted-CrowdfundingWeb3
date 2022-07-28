@@ -62,7 +62,7 @@ function Header() {
                 >
                   {currentAccount ? (
                     <a
-                      href="campaigns/Campaigns"
+                      href="/Campaigns"
                       className={styles.aLink}
                       aria-current="page"
                     >

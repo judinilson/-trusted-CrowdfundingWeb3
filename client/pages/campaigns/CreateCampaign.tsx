@@ -76,7 +76,7 @@ function CreateCampaign() {
     return isValid;
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
     if (!validate()) {
@@ -102,7 +102,14 @@ function CreateCampaign() {
         setToasterAnimation(false);
       }, 2000);
     }
-  }, [animateToast]);
+    if (responseType!.success) {
+      setName("");
+      setMinContribution("");
+      setDescription("");
+      setPhotoUrl("");
+      setGoal("");
+    }
+  }, [animateToast, responseType]);
   return (
     <>
       <Header />
@@ -120,7 +127,7 @@ function CreateCampaign() {
         />
       )}
       <div className={styles.container}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} id="createCampaign">
           <div className={styles.formLayout}>
             <input
               type="name"
@@ -153,8 +160,8 @@ function CreateCampaign() {
                 className={styles.input}
                 placeholder=""
                 required={true}
-                min="0"
-                max="5"
+                min="2"
+                max="10"
               />
               <label htmlFor="minimum_contribution" className={styles.label}>
                 Minimum contribution (ETHER)
@@ -175,8 +182,8 @@ function CreateCampaign() {
                 className={styles.input}
                 placeholder=""
                 required={true}
-                min="0"
-                max="5"
+                min="2"
+                max="10"
               />
               <label htmlFor="floating_last_name" className={styles.label}>
                 Goal target (ETHER)
