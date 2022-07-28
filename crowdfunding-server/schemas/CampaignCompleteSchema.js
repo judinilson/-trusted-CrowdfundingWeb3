@@ -7,7 +7,7 @@ export const CampaignCompleteSchema = {
       name: "manager",
       title: "manager (user uid)",
       type: "reference",
-      to: { type: "user" },
+      to: { type: "users" },
     },
     {
       name: "balance",

@@ -1,5 +1,5 @@
 export const userSchema = {
-  name: "user",
+  name: "users",
   title: "Users",
   type: "document",
   fields: [
