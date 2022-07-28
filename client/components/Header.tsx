@@ -1,7 +1,15 @@
 import Link from "next/link";
-import React from "react";
-
+import React, { useContext, useEffect, useState } from "react";
+import { CustomProvider, CustomContext } from "../contexts/context";
 function Header() {
+  const [userName, setUserName] = useState("");
+  const { connectWallet, currentAccount } = useContext(CustomContext);
+
+  useEffect(() => {
+    if (!currentAccount) return;
+    setUserName(`${currentAccount.slice(0, 7)}...${currentAccount.slice(35)}`);
+  }, [currentAccount]);
+
   return (
     <nav className={styles.nav}>
       <div className={styles.navContainer}>
@@ -38,10 +46,25 @@ function Header() {
                 Canpaigns
               </a>
             </li>
+
             <li>
-              <a href="#" className={styles.aLink}>
-                Connect
-              </a>
+              {currentAccount ? (
+                <div className="flex flex-row  items-center">
+                  <div className="aLink">{userName}</div>
+                  <img
+                    className="p-1 w-8 h-8 mx-2 rounded-full ring-2 ring-gray-300 dark:ring-gray-500"
+                    src="https://m.media-amazon.com/images/I/91N1lG+LBIS._AC_SL1500_.jpg"
+                    alt="Bordered avatar"
+                  />
+                </div>
+              ) : (
+                <button
+                  className={styles.aLink}
+                  onClick={() => connectWallet()}
+                >
+                  Connect
+                </button>
+              )}
             </li>
           </ul>
         </div>

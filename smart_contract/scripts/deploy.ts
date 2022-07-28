@@ -6,8 +6,8 @@ async function main() {
   const accounts = await ethers.getSigners();
   const minimum = ethers.utils.parseEther("1");
   console.log("Attempting to deploy from account", accounts[0]);
-  const Campaign = await ethers.getContractFactory("Campaign");
-  const campaign = await Campaign.deploy(minimum, accounts[0].address);
+  const Campaign = await ethers.getContractFactory("CampaignFactory");
+  const campaign = await Campaign.deploy();
 
   await campaign.deployed();
 

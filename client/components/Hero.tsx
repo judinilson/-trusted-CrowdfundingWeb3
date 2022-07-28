@@ -1,6 +1,7 @@
-import React from "react";
-
+import React, { useContext, useEffect, useState } from "react";
+import { CustomProvider, CustomContext } from "../contexts/context";
 function Hero() {
+  const { connectWallet, currentAccount } = useContext(CustomContext);
   return (
     <section className={styles.section}>
       <div className={styles.sectionContainer}>
@@ -26,9 +27,15 @@ function Hero() {
               ></path>
             </svg>
           </a>
-          <a href="#" className={styles.aButton}>
-            Connect
-          </a>
+          {!currentAccount ? (
+            <button className={styles.aButton} onClick={() => connectWallet()}>
+              Connect
+            </button>
+          ) : (
+            <a href="#" className={styles.aButton}>
+              Create campaign
+            </a>
+          )}
         </div>
         <div className={styles.ethCard}>
           <img
