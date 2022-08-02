@@ -142,7 +142,7 @@ function Campaigns() {
                       className="flex items-center py-4 px-6  whitespace-nowrap text-white"
                       onClick={() => {
                         Router.push({
-                          pathname: `/campaigns/`,
+                          pathname: `/campaigns/${c.id}`,
                           query: { campaignId: c.id },
                         });
                       }}
