@@ -38,5 +38,11 @@ export const CampaignSchema = {
       title: "Timestamp",
       type: "datetime",
     },
+    {
+      name: "creator",
+      title: "Creator uid",
+      type: "reference",
+      to: [{ type: "users" }],
+    },
   ],
 };

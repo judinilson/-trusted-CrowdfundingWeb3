@@ -7,6 +7,7 @@ import {
   contractCampaignABI,
   CampaignContractAddress,
 } from "../lib/constants";
+import { useRouter } from "next/router";
 
 export const CustomContext = React.createContext(0);
 
@@ -94,7 +95,7 @@ export const CustomProvider = ({ children }) => {
   };
 
   /**
-   * Create campaigns
+   * save campaigns to sanityClient
    */
   const saveCampaign = async (
     txHash,
@@ -114,6 +115,11 @@ export const CustomProvider = ({ children }) => {
       description: description,
       timestamp: new Date(Date.now()).toISOString(),
       txHash: txHash,
+      creator: {
+        _key: currentAccount,
+        _ref: currentAccount,
+        _type: "reference",
+      },
     };
     await client.createIfNotExists(txDoc);
     await client
@@ -169,8 +175,89 @@ export const CustomProvider = ({ children }) => {
       setResponseType({ error: true, message: error.message });
     }
   };
+
   /**
-   * Create user profile in Sanity
+   * Get campaigns from sanity
+   */
+  const getCampaigns = async () => {
+    // let campaignAddresses = [];
+    // try {
+    //   const campaignFactoryContract = getCampainFactoryContract();
+    //   campaignAddresses = await campaignFactoryContract.getDeployedCampaigns();
+    // } catch (error) {
+    //   console.log(error.message);
+    //   setResponseType({
+    //     error: true,
+    //     message: error.message,
+    //   });
+    //   return;
+    // }
+    //console.log(campaignAddresses);
+    try {
+      const query = `*[_type == "campaigns"  ] {
+        
+        "id":txHash,
+        campaignName,
+        miniumContribution,
+        "goal":goalTarget,
+        "urlCover":cover,
+        description,
+        "dateTime":timestamp,
+        "creator":creator._ref
+          }`;
+      const campaignData = await client.fetch(query);
+
+      //console.log(campaignData, "🔥");
+      setResponseType({
+        success: true,
+        message: "successfully fetched",
+      });
+      return campaignData;
+    } catch (error) {
+      console.log(error.message);
+      setResponseType({
+        error: true,
+        message: error.message,
+      });
+    }
+  };
+
+  /**
+   * Get campaigns from sanity
+   * @param {string} campaignId campaign id
+   */
+  const getCampaignById = async (campaignId) => {
+    try {
+      const query = `*[_type == "campaigns"  && txHash == "${campaignId}" ] {
+        
+        "id":txHash,
+        campaignName,
+        miniumContribution,
+        "goal":goalTarget,
+        "urlCover":cover,
+        description,
+        "dateTime":timestamp,
+        "creator":creator._ref
+          }`;
+
+      const campaignData = await client.fetch(query);
+      setResponseType({
+        success: true,
+        message: "successfully fetched",
+      });
+      console.log(campaignData, "🔥");
+
+      return campaignData;
+    } catch (error) {
+      console.log(error.message);
+      setResponseType({
+        error: true,
+        message: error.message,
+      });
+    }
+  };
+  /**
+   * Create user profile in Sanity if doesnt exist
    */
   useEffect(() => {
     if (!currentAccount) return;
@@ -198,6 +285,8 @@ export const CustomProvider = ({ children }) => {
         responseType,
         formData,
         setFormData,
+        getCampaigns,
+        getCampaignById,
       }}
     >
       {children}

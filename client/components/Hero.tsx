@@ -35,7 +35,7 @@ function Hero() {
               }}
             >
               {currentAccount ? (
-                <a href="campaigns/Campaigns" className={styles.aLink}>
+                <a href="/Campaigns" className={styles.aLink}>
                   View campaigns
                   <svg
                     className="w-5 h-5 ml-2 -mr-1"
