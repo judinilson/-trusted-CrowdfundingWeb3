@@ -10,7 +10,8 @@ import {
 import { useRouter } from "next/router";
 
 export const CustomContext = React.createContext(0);
-
+const Web3 = require("web3");
+let web3;
 let eth;
 
 if (typeof window !== "undefined") {
@@ -41,13 +42,6 @@ const getCampainContract = (campaignAddress) => {
   );
 
   return CampaignContract;
-};
-const getWalletBalance = async (address) => {
-  const provider = new ethers.providers.Web3Provider(ethereum);
-
-  const balance = await provider.getBalance(String(address));
-
-  return ethers.utils.formatEther(balance._hex).slice(0, 5);
 };
 
 export const CustomProvider = ({ children }) => {
@@ -190,20 +184,6 @@ export const CustomProvider = ({ children }) => {
    * Get campaigns from sanity
    */
   const getCampaigns = async () => {
-    // let campaignAddresses = [];
-    // try {
-    //   const campaignFactoryContract = getCampainContract();
-    //   console.log(campaignFactoryContract);
-    //   campaignAddresses = await campaignFactoryContract.getDeployedCampaigns();
-    // } catch (error) {
-    //   console.log(error.message);
-    //   setResponseType({
-    //     error: true,
-    //     message: error.message,
-    //   });
-    //   return;
-    //}
-    //console.log(campaignAddresses);
     try {
       const query = `*[_type == "campaigns"  ] {
         
@@ -239,8 +219,11 @@ export const CustomProvider = ({ children }) => {
    */
   const getCampaignById = async (campaignId) => {
     try {
-      const campaign = await getCampainContract(campaignId);
-      const summaryResponse = await campaign.getSummary();
+      const campaign = new web3.eth.Contract(
+        contractCampaignABI,
+        CampaignContractAddress
+      ); //await getCampainContract(campaignId);
+      const summaryResponse = await campaign.methods.getSummary().call();
       const [
         manager,
         balance,
@@ -249,10 +232,10 @@ export const CustomProvider = ({ children }) => {
         contributorsCount,
       ] = [
         String(summaryResponse[0]),
-        ethers.utils.formatEther(String(summaryResponse[1]._hex)),
-        ethers.utils.formatEther(String(summaryResponse[2]._hex)),
-        +ethers.utils.formatEther(String(summaryResponse[3]._hex)),
-        +ethers.utils.formatEther(String(summaryResponse[4]._hex)),
+        String(web3.utils.fromWei(summaryResponse[1], "ether")),
+        String(web3.utils.fromWei(summaryResponse[2], "ether")),
+        +String(summaryResponse[3]),
+        +String(summaryResponse[4]),
       ];
       try {
         const query = `*[_type == "campaigns"  && txHash == "${campaignId}" ] {
@@ -269,10 +252,6 @@ export const CustomProvider = ({ children }) => {
 
         const data = await client.fetch(query);
         const campaignData = data[0];
-        setResponseType({
-          success: true,
-          message: "successfully fetched",
-        });
 
         const campaign = {
           id: campaignData.id,
@@ -290,55 +269,57 @@ export const CustomProvider = ({ children }) => {
         return campaign;
       } catch (error) {
         console.log(error.message);
-        setResponseType({
-          error: true,
-          message: error.message,
-        });
+
         return;
       }
     } catch (error) {
       console.log("error getting summaryResponse", error);
-      setResponseType({
-        error: true,
-        message: error.message,
-      });
+
       return;
     }
   };
 
   const contribute = async (amount, campaignId) => {
-    setResponseType({
-      error: false,
-      success: false,
-      message: undefined,
-    });
     try {
       const provider = new ethers.providers.Web3Provider(ethereum);
-      const account = provider.getSigner();
+      const providerAccount = provider.getSigner();
+      const account = await providerAccount.getAddress();
 
       if (!account) {
         throw new Error("Please log into your MetaMask account");
       }
-      const campaign = await getCampainContract(campaignId);
-      const parsedAmount = ethers.utils.parseEther(amount);
-      await campaign
-        .contribute()
-        .send({ from: account, value: parsedAmount, gasLimit: 100000 });
-      setResponseType({
-        succes: true,
-        message: "successfully contributed",
+      const campaign = new web3.eth.Contract(
+        contractCampaignABI,
+        CampaignContractAddress
+      ); //await getCampainContract(campaignId);
+
+      const contribution = await campaign.methods.contribute().send({
+        from: account,
+        value: web3.utils.toWei(amount, "ether"),
+        gas: "0x7EF40",
       });
+
       console.log("successfully contributed");
+      return true;
     } catch (error) {
       // @ts-ignore
+
       console.error(`error contributing:${error.message}`);
-      return;
+
+      return false;
     }
   };
+
   /**
    * Create user profile in Sanity if doesnt exist
    */
   useEffect(() => {
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    web3 = new Web3(provider.provider);
+    window.ethereum.on("accountsChanged", () => {
+      window.location.reload();
+    });
+    //console.log(web3);
     if (!currentAccount) return;
     (async () => {
       const userDoc = {
@@ -366,7 +347,7 @@ export const CustomProvider = ({ children }) => {
         setFormData,
         getCampaigns,
         getCampaignById,
-        getWalletBalance,
+
         contribute,
       }}
     >

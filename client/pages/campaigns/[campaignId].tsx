@@ -1,16 +1,18 @@
 import { useRouter } from "next/router";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import Toaster from "../../components/Toaster";
 import { CustomContext } from "../../contexts/context";
 
 function campaign() {
   const router = useRouter();
   const campaignId = router.query.campaignId;
   const [campaign, setCampaign] = useState({});
-  const [walletBalance, setWalletBalance] = useState();
+  const [contributionLoading, setContributionLoading] = useState(false);
   const [contribution, setContribution] = useState();
-  const [minContribution, setMinContribution] = useState();
+  const [contributionResponse, setContributionResponse] = useState();
+
   const [minContributionError, setMinContributionError] = useState("");
-  const { getCampaignById, responseType, getWalletBalance, contribute } =
+  const { getCampaignById, responseType, contribute } =
     useContext(CustomContext);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +48,21 @@ function campaign() {
     if (!validate("contribute")) {
       return;
     }
-    console.log(contribution);
-    await contribute(contribution, campaignId);
+    setContributionLoading(true);
+
+    const response = await contribute(contribution, campaignId);
+
+    if (response) {
+      setContributionResponse(true);
+    } else {
+      setContributionResponse(false);
+    }
+    setToasterAnimation(true);
+    setContributionLoading(false);
   };
   useEffect(() => {
     (async () => {
       setIsLoading(true);
-      setToasterAnimation(true);
 
       if (campaignId) {
         const _campaign = await getCampaignById(campaignId);
@@ -60,11 +70,6 @@ function campaign() {
         if (campaign) {
           setIsLoading(false);
         }
-        console.log("campaign:", _campaign);
-
-        // const wallet = await getWalletBalance(_campaign[0].creator);
-        // setWalletBalance(wallet);
-        // setMinContribution(_campaign[0].miniumContribution);
       }
     })();
 
@@ -135,6 +140,19 @@ function campaign() {
         </>
       ) : (
         <>
+          {contributionResponse ? (
+            <Toaster
+              type={"success"}
+              message="successfully contributed"
+              animate={animateToast}
+            />
+          ) : (
+            <Toaster
+              type={"error"}
+              message="Please provide contribution above the minimum"
+              animate={animateToast}
+            />
+          )}
           <div className={styles.container}>
             <div className={styles.leftLayout}>
               {/* cover  */}
@@ -207,9 +225,12 @@ function campaign() {
                 </div>
                 <div className="block p-5 max-w-lg text-center  rounded-lg border mb-8 shadow-md  bg-gray-800 border-gray-700 hover:bg-gray-700">
                   <h5 className="mb-2 text-lg font-bold tracking-tight text-white">
-                    {campaign.contributorsCount}
+                    Contributors
                   </h5>
-                  <p className="my-3  text-gray-300 text-lg font-medium">0</p>
+                  <p className="my-3  text-gray-300 text-lg font-medium">
+                    {" "}
+                    {campaign.contributorsCount}
+                  </p>
                   <p className="font-normal align-bottom text-gray-600 text-sm">
                     Number of Contributor
                   </p>
@@ -239,8 +260,31 @@ function campaign() {
                   type="button"
                   className={styles.button}
                   onClick={contributeOnclick}
+                  disabled={contributionLoading}
                 >
-                  Contribute
+                  {!contributionLoading ? (
+                    <> Contribute</>
+                  ) : (
+                    <>
+                      <svg
+                        role="status"
+                        className="inline mr-3 w-4 h-4 text-white animate-spin hover:text-gray-900"
+                        viewBox="0 0 100 101"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                          fill="#E5E7EB"
+                        />
+                        <path
+                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                      Loading...
+                    </>
+                  )}
                 </button>
                 <div className="text-gray-400  flex flex-row ">
                   <p className="text-gray-100 text-sm">NOTE:</p>
@@ -251,12 +295,12 @@ function campaign() {
                 </div>
               </div>
               {/* create retquest */}
-              <div className="mt-12">
+              {/* <div className="mt-12">
                 <div className={styles.title}>Requests</div>
                 <button type="button" className={styles.button}>
                   Create Request
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </>
