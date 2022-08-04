@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useRouter } from "next/router";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Toaster from "../../components/Toaster";
@@ -54,6 +55,7 @@ function campaign() {
 
     if (response) {
       setContributionResponse(true);
+      window.location.reload();
     } else {
       setContributionResponse(false);
     }

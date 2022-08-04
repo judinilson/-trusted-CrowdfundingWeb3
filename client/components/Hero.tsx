@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useContext, useEffect, useState } from "react";
 import { CustomProvider, CustomContext } from "../contexts/context";
 import Toaster from "./Toaster";

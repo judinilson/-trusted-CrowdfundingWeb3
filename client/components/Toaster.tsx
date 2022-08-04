@@ -1,5 +1,6 @@
+//@ts-nocheck
 import React, { useEffect, useState } from "react";
-//@ts-ignore
+
 function Toaster({ type, message, animate }) {
   return (
     <>

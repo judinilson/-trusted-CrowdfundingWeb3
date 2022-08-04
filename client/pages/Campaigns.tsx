@@ -1,3 +1,4 @@
+//@ts-nocheck
 import Router from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import Footer from "../components/Footer";
