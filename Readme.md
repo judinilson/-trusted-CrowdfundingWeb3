@@ -17,7 +17,7 @@ Crowdfunding models are often used to finance new products or philanthropic ende
 
 ### TRUSTED CROWDFUNDING LINK
 
-- https://uniswap-client-rk658cnfx-judinilson.vercel.app
+- https://trusted-crowdfunding.vercel.app
 
 # Getting Started
 
